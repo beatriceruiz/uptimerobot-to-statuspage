@@ -5,8 +5,8 @@ on:
     - cron: "*/5 * * * *"   # toutes les 5 minutes 
   workflow_dispatch:
   push:
-  branches:
-    - main
+    branches:
+      - main
 
 jobs:
   sync:
