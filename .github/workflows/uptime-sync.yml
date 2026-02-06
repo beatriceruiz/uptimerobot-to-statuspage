@@ -2,7 +2,7 @@ name: Sync UptimeRobot → Statuspage
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # toutes les 5 minutes 
+    - cron: "*/15 * * * *"   # toutes les 15 minutes 
   workflow_dispatch:
   push:
     branches:
