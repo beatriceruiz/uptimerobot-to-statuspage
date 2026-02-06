@@ -1,0 +1,35 @@
+name: Sync UptimeRobot → Statuspage
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # toutes les 5 minutes
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check site status on UptimeRobot
+        id: check
+        run: |
+          RESPONSE=$(curl -s -X POST https://api.uptimerobot.com/v2/getMonitors \
+            -d api_key=${{ secrets.UPTIMEROBOT_API_KEY }} \
+            -d monitors=${{ secrets.UPTIMEROBOT_MONITOR_ID }} \
+            -d format=json)
+
+          STATUS=$(echo $RESPONSE | jq -r '.monitors[0].status')
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+
+      - name: Update Statuspage component
+        run: |
+          if [ "${{ steps.check.outputs.status }}" = "2" ]; then
+            NEW_STATUS="operational"
+          else
+            NEW_STATUS="major_outage"
+          fi
+
+          curl -X PATCH https://api.statuspage.io/v1/pages/${{ secrets.STATUSPAGE_PAGE_ID }}/components/${{ secrets.STATUSPAGE_COMPONENT_ID }} \
+            -H "Authorization: OAuth ${{ secrets.STATUSPAGE_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"component\":{\"status\":\"$NEW_STATUS\"}}"
